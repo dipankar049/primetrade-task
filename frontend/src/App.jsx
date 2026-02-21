@@ -7,6 +7,7 @@ import PrivateRoute from './components/common/PrivateRoute';
 import Home from './pages/Home';
 import Navbar from './components/dashboard/Navbar';
 import { ToastContainer } from 'react-toastify';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/task-management/:projectId" element={<TaskManagementPage />} />
         </Route>
       </Routes>

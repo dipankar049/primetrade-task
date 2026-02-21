@@ -149,11 +149,11 @@ const Dashboard = () => {
         <div className="mt-8 px-4">
 
           {/* User Info Section */}
-          <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+          {/* <div className="bg-white p-6 rounded-xl shadow-md mb-8">
             <h2 className="text-2xl font-semibold mb-2">Welcome, {user?.name}!</h2>
             <p>Email: {user?.email}</p>
             <p>Country: {user?.country}</p>
-          </div>
+          </div> */}
 
           {/* Add Project Section */}
           <div className="bg-white p-6 rounded-xl shadow-md mb-8">
