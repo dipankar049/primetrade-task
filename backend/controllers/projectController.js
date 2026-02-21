@@ -21,8 +21,39 @@ const createProject = async (req, res) => {
 
 // Get all projects of logged-in user
 const getProjects = async (req, res) => {
-  const projects = await Project.find({ user: req.user._id });
-  res.status(200).json(projects);
+  try {
+    const { search = '', sort = 'latest' } = req.query;
+
+    let query = {
+      user: req.user._id,
+    };
+
+    // Search by title or description
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    let sortOption = {};
+
+    if (sort === 'latest') {
+      sortOption = { createdAt: -1 };
+    } else if (sort === 'oldest') {
+      sortOption = { createdAt: 1 };
+    } else if (sort === 'az') {
+      sortOption = { title: 1 };
+    } else if (sort === 'za') {
+      sortOption = { title: -1 };
+    }
+
+    const projects = await Project.find(query).sort(sortOption);
+
+    res.status(200).json(projects);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 // Get project by ID (for TaskManagement page)

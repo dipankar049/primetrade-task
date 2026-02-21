@@ -26,7 +26,7 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    toast.info('Server is waking up. Please wait up to 1 minute...', { autoClose: 8000 });
+    // toast.info('Server is waking up. Please wait up to 1 minute...', { autoClose: 8000 });
 
     try {
       const res = await axios.post(`${apiUrl}/api/auth/login`, {

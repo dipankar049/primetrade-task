@@ -62,7 +62,7 @@ const Signup = () => {
 
     setLoading(true);
     setError('');
-    toast.info('Server is waking up. Please wait up to 1 minute...', { autoClose: 8000 });
+    // toast.info('Server is waking up. Please wait up to 1 minute...', { autoClose: 8000 });
 
     try {
       const res = await axios.post(`${apiUrl}/api/auth/signup`, form);

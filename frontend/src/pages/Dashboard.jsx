@@ -2,54 +2,56 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { Plus } from "lucide-react";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newProject, setNewProject] = useState({ title: '', description: '' });
   const [tasks, setTasks] = useState({});
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('latest');
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const fetchProjects = async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-      if (!token) {
-        setError('No token found');
-        setLoading(false);
-        return;
-      }
+    if (!token) {
+      setError('No token found');
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const userRes = await axios.get(`${apiUrl}/api/auth/me`, {
+    try {
+
+      const projectRes = await axios.get(
+        `${apiUrl}/api/projects?search=${search}&sort=${sort}`,
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(userRes.data.user);
-
-        const projectRes = await axios.get(`${apiUrl}/api/projects`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProjects(projectRes.data);
-
-        const tasksData = {};
-        for (const project of projectRes.data) {
-          const taskRes = await axios.get(`${apiUrl}/api/tasks/${project._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          tasksData[project._id] = taskRes.data;
         }
-        setTasks(tasksData);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Something went wrong');
-      } finally {
-        setLoading(false);
-      }
-    };
+      );
+      setProjects(projectRes.data);
 
-    fetchData();
+      const tasksData = {};
+      for (const project of projectRes.data) {
+        const taskRes = await axios.get(`${apiUrl}/api/tasks/${project._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        tasksData[project._id] = taskRes.data;
+      }
+      setTasks(tasksData);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
   }, []);
 
   const handleAddProject = async () => {
@@ -146,104 +148,118 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1">
-        <div className="mt-8 px-4">
+        <div className="mt-2 sm:mt-4 px-2 sm:px-6">
 
-          {/* User Info Section */}
-          {/* <div className="bg-white p-6 rounded-xl shadow-md mb-8">
-            <h2 className="text-2xl font-semibold mb-2">Welcome, {user?.name}!</h2>
-            <p>Email: {user?.email}</p>
-            <p>Country: {user?.country}</p>
-          </div> */}
+          {/* Search & Filter Section */}
+          <div className="bg-white p-3 rounded-lg shadow-sm mb-4">
+            <div className="flex flex-col gap-2">
 
-          {/* Add Project Section */}
-          <div className="bg-white p-6 rounded-xl shadow-md mb-8">
-            <h3 className="text-xl font-semibold mb-4">Create New Project</h3>
-            <div className="flex gap-4 flex-wrap">
+              {/* Row 1: Search */}
               <input
                 type="text"
-                placeholder="Project Title"
-                value={newProject.title}
-                onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                className="border px-4 py-2 rounded-md w-full md:w-1/3"
+                placeholder="Search projects..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border px-3 py-1.5 text-sm rounded-md w-full focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-              <input
-                type="text"
-                placeholder="Project Description"
-                value={newProject.description}
-                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                className="border px-4 py-2 rounded-md w-full md:w-1/3"
-              />
-              <button
-                onClick={handleAddProject}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-              >
-                Add Project
-              </button>
+
+              {/* Row 2: Sort + Apply */}
+              <div className="flex gap-2">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="border px-3 py-1.5 text-sm rounded-md flex-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="latest">Latest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="az">A-Z</option>
+                  <option value="za">Z-A</option>
+                </select>
+
+                <button
+                  onClick={fetchProjects}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-sm rounded-md"
+                >
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Projects List */}
           <div className="space-y-6">
-            <h3 className="text-2xl font-semibold mb-4">Your Projects</h3>
+            {/* Projects List Header */}
+            <div className="flex items-center justify-between mb-4 px-2">
+              <div>
+                <h3 className="text-xl md:text-2xl font-semibold text-gray-800">
+                  Your Projects
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Manage and organize your work
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition-all duration-200 hover:scale-105"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+            
             {projects.length > 0 ? (
-              <div className="space-y-6 px-4 sm:px-0 overflow-x-hidden">
+              <div className="space-y-2 overflow-x-hidden">
                 {projects.map((project) => (
                   <div
                     key={project._id}
-                    className="bg-white p-6 rounded-xl shadow-md border border-gray-200 overflow-hidden"
+                    className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 transition hover:shadow-md"
                   >
-                    {/* Project Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                      <div className="min-w-0 break-words w-full">
-                        <h4 className="text-xl font-semibold break-words break-all whitespace-normal w-full">
+                    {/* Top Section */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                      {/* Title + Description */}
+                      <div className="min-w-0">
+                        <h4 className="text-base font-semibold truncate">
                           {project.title}
                         </h4>
-                        <p className="text-gray-600 break-words break-all whitespace-normal w-full">
+                        <p className="text-sm text-gray-600 truncate">
                           {project.description}
                         </p>
                       </div>
 
+                      {/* Buttons (Desktop inline) */}
+                      <div className="hidden sm:flex gap-2">
+                        <button
+                          onClick={() => handleGoToTaskManagement(project._id)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 text-sm rounded-md"
+                        >
+                          View
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteProject(project._id, project.title)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 text-sm rounded-md"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Mobile Buttons (Bottom Row) */}
+                    <div className="flex gap-2 mt-3 sm:hidden">
+                      <button
+                        onClick={() => handleGoToTaskManagement(project._id)}
+                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 text-sm rounded-md"
+                      >
+                        View
+                      </button>
+
                       <button
                         onClick={() => handleDeleteProject(project._id, project.title)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm w-fit"
-                        style={{ marginTop: '0.5rem' }}
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 text-sm rounded-md"
                       >
                         Delete
                       </button>
-                    </div>
-
-                    {/* Tasks */}
-                    <div>
-                      <h5 className="font-medium mb-2">Tasks</h5>
-                      {tasks[project._id]?.length > 0 ? (
-                        <ul className="space-y-2 mb-4">
-                          {tasks[project._id].map((task) => (
-                            <li
-                              key={task._id}
-                              className="bg-gray-100 px-4 py-2 rounded-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
-                            >
-                              <span className="font-medium break-words break-all whitespace-normal w-full">
-                                {task.title}
-                              </span>
-
-                              <span className="text-sm text-gray-600 capitalize">
-                                {task.status}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 mb-4">No tasks yet. Add your first task!</p>
-                      )}
-
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() => handleGoToTaskManagement(project._id)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-                        >
-                          View & Manage Tasks
-                        </button>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -255,6 +271,53 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md p-4 sm:p-6 mx-6 rounded-lg shadow-lg">
+
+            <h3 className="text-lg font-semibold mb-4">Create Project</h3>
+
+            <input
+              type="text"
+              placeholder="Project Title"
+              value={newProject.title}
+              onChange={(e) =>
+                setNewProject({ ...newProject, title: e.target.value })
+              }
+              className="border w-full px-3 py-2 mb-3 rounded-md text-sm"
+            />
+
+            <input
+              type="text"
+              placeholder="Project Description"
+              value={newProject.description}
+              onChange={(e) =>
+                setNewProject({ ...newProject, description: e.target.value })
+              }
+              className="border w-full px-3 py-2 mb-4 rounded-md text-sm"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-1.5 text-sm bg-gray-300 rounded-md"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleAddProject();
+                  setShowModal(false);
+                }}
+                className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-md"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
