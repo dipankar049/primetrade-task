@@ -10,7 +10,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newProject, setNewProject] = useState({ title: '', description: '' });
-  const [tasks, setTasks] = useState({});
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('latest');
   const [showModal, setShowModal] = useState(false);
@@ -34,15 +33,6 @@ const Dashboard = () => {
         }
       );
       setProjects(projectRes.data);
-
-      const tasksData = {};
-      for (const project of projectRes.data) {
-        const taskRes = await axios.get(`${apiUrl}/api/tasks/${project._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        tasksData[project._id] = taskRes.data;
-      }
-      setTasks(tasksData);
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong');
     } finally {
@@ -106,9 +96,6 @@ const Dashboard = () => {
                     headers: { Authorization: `Bearer ${token}` },
                   });
                   setProjects((prev) => prev.filter((p) => p._id !== projectId));
-                  const updatedTasks = { ...tasks };
-                  delete updatedTasks[projectId];
-                  setTasks(updatedTasks);
                   toast.dismiss(toastId);
                   toast.success('Project deleted successfully');
                 } catch (err) {

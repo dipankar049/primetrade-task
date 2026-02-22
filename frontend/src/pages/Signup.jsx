@@ -65,7 +65,8 @@ const Signup = () => {
     // toast.info('Server is waking up. Please wait up to 1 minute...', { autoClose: 8000 });
 
     try {
-      const res = await axios.post(`${apiUrl}/api/auth/signup`, form);
+      const { confirmPassword, ...dataToSend } = form;
+      const res = await axios.post(`${apiUrl}/api/auth/signup`, dataToSend);
       localStorage.setItem('token', res.data.token);
       toast.success("Signup successful!");
       navigate('/dashboard', { replace: true });
