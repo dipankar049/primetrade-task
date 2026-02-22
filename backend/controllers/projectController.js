@@ -3,20 +3,31 @@ const Task = require('../models/Task');
 
 // Create new project (max 4 per user)
 const createProject = async (req, res) => {
-  const { title, description } = req.body;
-  const existingProjects = await Project.find({ user: req.user._id });
+  try {
+    const { title, description } = req.body;
 
-  if (existingProjects.length >= 4) {
-    return res.status(400).json({ message: 'Maximum 4 projects allowed per user.' });
+    if (!title || !description) {
+      return res.status(400).json({ message: 'Title and description required' });
+    }
+
+    const existingProjects = await Project.countDocuments({ user: req.user._id });
+
+    if (existingProjects >= 10) {
+      return res.status(403).json({ message: 'Maximum 10 projects allowed per user.' });
+    }
+
+    const project = await Project.create({
+      title,
+      description,
+      user: req.user._id,
+    });
+
+    res.status(201).json(project);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error while creating project' });
   }
-
-  const project = await Project.create({
-    title,
-    description,
-    user: req.user._id,
-  });
-
-  res.status(201).json(project);
 };
 
 // Get all projects of logged-in user

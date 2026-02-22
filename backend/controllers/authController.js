@@ -2,41 +2,38 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT token
-const generateToken = (id, expiresIn = '1h') => {
+const generateToken = (id, expiresIn = '7d') => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn });
 };
 
 const registerUser = async (req, res) => {
+  try {
     const { name, email, password, country } = req.body;
 
     if (!name || !email || !password || !country) {
-        return res.status(400).json({ message: 'Please fill all fields' });
+      return res.status(400).json({ message: 'Please fill all fields' });
     }
 
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-        return res.status(400).json({ message: 'User already exists' });
+      return res.status(409).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({
-        name,
-        email,
-        password,
-        country,
+    const user = await User.create({ name, email, password, country });
+
+    res.status(201).json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      country: user.country,
+      token: generateToken(user._id),
     });
 
-    if (user) {
-      res.status(201).json({
-        _id: user.id,
-        name: user.name,
-        email: user.email,
-        country: user.country,
-        token: generateToken(user._id),
-      });
-    } else {
-      res.status(400).json({ message: 'Invalid user data' });
-    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error during registration' });
+  }
 };
 
 const loginUser = async (req, res) => {
