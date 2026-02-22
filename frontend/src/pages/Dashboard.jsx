@@ -152,7 +152,7 @@ const Dashboard = () => {
 
           {/* Search & Filter Section */}
           <div className="bg-white p-3 rounded-lg shadow-sm mb-4">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
 
               {/* Row 1: Search */}
               <input
@@ -160,11 +160,11 @@ const Dashboard = () => {
                 placeholder="Search projects..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="border px-3 py-1.5 text-sm rounded-md w-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="border px-3 py-1.5 text-sm rounded-md w-full sm:w-2/3 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
 
               {/* Row 2: Sort + Apply */}
-              <div className="flex gap-2">
+              <div className="flex sm:w-1/3 gap-2">
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
@@ -228,7 +228,7 @@ const Dashboard = () => {
                       </div>
 
                       {/* Buttons (Desktop inline) */}
-                      <div className="hidden sm:flex gap-2">
+                      <div className="hidden sm:flex gap-4">
                         <button
                           onClick={() => handleGoToTaskManagement(project._id)}
                           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 text-sm rounded-md"
@@ -246,7 +246,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Mobile Buttons (Bottom Row) */}
-                    <div className="flex gap-2 mt-3 sm:hidden">
+                    <div className="flex gap-6 mt-3 sm:hidden">
                       <button
                         onClick={() => handleGoToTaskManagement(project._id)}
                         className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 text-sm rounded-md"

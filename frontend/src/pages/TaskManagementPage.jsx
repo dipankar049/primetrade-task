@@ -105,7 +105,7 @@ const TaskManagementPage = () => {
   return (
     <div className="flex min-h-screen">
       <div className="flex-1">
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Manage Tasks - {projectTitle}</h2>
           </div>
